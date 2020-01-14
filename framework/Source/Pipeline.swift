@@ -31,27 +31,48 @@ infix operator --> : AdditionPrecedence
 // MARK: Extensions and supporting types
 
 public extension ImageSource {
-    public func addTarget(_ target:ImageConsumer, atTargetIndex:UInt? = nil) {
-        if let targetIndex = atTargetIndex {
-            target.setSource(self, atIndex:targetIndex)
-            targets.append(target, indexAtTarget:targetIndex)
-            transmitPreviousImage(to:target, atIndex:targetIndex)
-        } else if let indexAtTarget = target.addSource(self) {
-            targets.append(target, indexAtTarget:indexAtTarget)
-            transmitPreviousImage(to:target, atIndex:indexAtTarget)
-        } else {
-            debugPrint("Warning: tried to add target beyond target's input capacity")
+    func addTarget(_ target:ImageConsumer, atTargetIndex:UInt? = nil) {
+        sharedImageProcessingContext.runOperationAsynchronously {
+            if let targetIndex = atTargetIndex {
+                target.setSource(self, atIndex:targetIndex)
+                self.targets.append(target, indexAtTarget:targetIndex)
+                self.transmitPreviousImage(to:target, atIndex:targetIndex)
+            } else if let indexAtTarget = target.addSource(self) {
+                self.targets.append(target, indexAtTarget:indexAtTarget)
+                self.transmitPreviousImage(to:target, atIndex:indexAtTarget)
+            } else {
+                debugPrint("Warning: tried to add target beyond target's input capacity")
+            }
         }
     }
 
-    public func removeAllTargets() {
-        for (target, index) in targets {
-            target.removeSourceAtIndex(index)
+    func removeAllTargets() {
+        sharedImageProcessingContext.runOperationAsynchronously {
+            for (target, index) in self.targets {
+                target.removeSourceAtIndex(index)
+            }
+            self.targets.removeAll()
         }
-        targets.removeAll()
     }
     
-    public func updateTargetsWithFramebuffer(_ framebuffer:Framebuffer) {
+    func remove(_ target:ImageConsumer) {
+        sharedImageProcessingContext.runOperationAsynchronously {
+            for (testTarget, index) in self.targets {
+                if(target === testTarget) {
+                    target.removeSourceAtIndex(index)
+                    self.targets.remove(target)
+                }
+            }
+        }
+    }
+    
+    func updateTargetsWithFramebuffer(_ framebuffer:Framebuffer) {
+        if (DispatchQueue.getSpecific(key:sharedImageProcessingContext.dispatchQueueKey) != sharedImageProcessingContext.dispatchQueueKeyValue) {
+            print("WARNING: updateTargetsWithFramebuffer() must be called from the sharedImageProcessingContext")
+        }
+        
+        let targets = self.targets.targets
+        
         if targets.count == 0 { // Deal with the case where no targets are attached by immediately returning framebuffer to cache
             framebuffer.lock()
             framebuffer.unlock()
@@ -68,16 +89,25 @@ public extension ImageSource {
 }
 
 public extension ImageConsumer {
-    public func addSource(_ source:ImageSource) -> UInt? {
+    fileprivate func addSource(_ source:ImageSource) -> UInt? {
         return sources.append(source, maximumInputs:maximumInputs)
     }
     
-    public func setSource(_ source:ImageSource, atIndex:UInt) {
+    fileprivate func setSource(_ source:ImageSource, atIndex:UInt) {
         _ = sources.insert(source, atIndex:atIndex, maximumInputs:maximumInputs)
     }
 
-    public func removeSourceAtIndex(_ index:UInt) {
+    fileprivate func removeSourceAtIndex(_ index:UInt) {
         sources.removeAtIndex(index)
+    }
+    
+    func removeAllSources() {
+        sharedImageProcessingContext.runOperationAsynchronously {
+            for (index, source) in self.sources.sources {
+                self.removeSourceAtIndex(index)
+                source.targets.remove(self)
+            }
+        }
     }
 }
 
@@ -91,82 +121,64 @@ class WeakImageConsumer {
 }
 
 public class TargetContainer:Sequence {
-    var targets = [WeakImageConsumer]()
-    var count:Int { get {return targets.count}}
-#if !os(Linux)
-    let dispatchQueue = DispatchQueue(label:"com.sunsetlakesoftware.GPUImage.targetContainerQueue", attributes: [])
-#endif
-
+    private var weakTargets = [WeakImageConsumer]()
+    
+    fileprivate var targets: [(ImageConsumer, UInt)] {
+        // Get list of values that have not deallocated
+        let targets: [(ImageConsumer, UInt)] = self.weakTargets.compactMap { weakImageConsumer in
+            if let imageConsumer = weakImageConsumer.value {
+                return (imageConsumer, weakImageConsumer.indexAtTarget)
+            }
+            else {
+                return nil
+            }
+        }
+        
+        // Remove any deallocated values
+        self.weakTargets = self.weakTargets.filter { $0.value != nil }
+        
+        return targets
+    }
+    
     public init() {
     }
     
-    public func append(_ target:ImageConsumer, indexAtTarget:UInt) {
+    internal func append(_ target:ImageConsumer, indexAtTarget:UInt) {
         // TODO: Don't allow the addition of a target more than once
-#if os(Linux)
-            self.targets.append(WeakImageConsumer(value:target, indexAtTarget:indexAtTarget))
-#else
-        dispatchQueue.async{
-            self.targets.append(WeakImageConsumer(value:target, indexAtTarget:indexAtTarget))
-        }
-#endif
+        self.weakTargets.append(WeakImageConsumer(value:target, indexAtTarget:indexAtTarget))
     }
     
     public func makeIterator() -> AnyIterator<(ImageConsumer, UInt)> {
+        let targets = self.targets
+        
         var index = 0
         
         return AnyIterator { () -> (ImageConsumer, UInt)? in
-#if os(Linux)
-                if (index >= self.targets.count) {
-                    return nil
-                }
-                
-                while (self.targets[index].value == nil) {
-                    self.targets.remove(at:index)
-                    if (index >= self.targets.count) {
-                        return nil
-                    }
-                }
-                
-                index += 1
-                return (self.targets[index - 1].value!, self.targets[index - 1].indexAtTarget)
-#else
-            return self.dispatchQueue.sync{
-                if (index >= self.targets.count) {
-                    return nil
-                }
-                
-                while (self.targets[index].value == nil) {
-                    self.targets.remove(at:index)
-                    if (index >= self.targets.count) {
-                        return nil
-                    }
-                }
-                
-                index += 1
-                return (self.targets[index - 1].value!, self.targets[index - 1].indexAtTarget)
-           }
-#endif
+            if (index >= targets.count) {
+                return nil
+            }
+            
+            index += 1
+            return targets[index - 1]
         }
     }
     
-    public func removeAll() {
-#if os(Linux)
-            self.targets.removeAll()
-#else
-        dispatchQueue.async{
-            self.targets.removeAll()
-        }
-#endif
+    fileprivate func removeAll() {
+        self.weakTargets.removeAll()
+    }
+    
+    fileprivate func remove(_ target:ImageConsumer) {
+        self.weakTargets = self.weakTargets.filter { $0.value !== target }
     }
 }
 
 public class SourceContainer {
-    var sources:[UInt:ImageSource] = [:]
+    fileprivate var sources:[UInt:ImageSource] = [:]
     
     public init() {
     }
     
-    public func append(_ source:ImageSource, maximumInputs:UInt) -> UInt? {
+    fileprivate func append(_ source:ImageSource, maximumInputs:UInt) -> UInt? {
         var currentIndex:UInt = 0
         while currentIndex < maximumInputs {
             if (sources[currentIndex] == nil) {
@@ -179,13 +191,13 @@ public class SourceContainer {
         return nil
     }
     
-    public func insert(_ source:ImageSource, atIndex:UInt, maximumInputs:UInt) -> UInt {
+    fileprivate func insert(_ source:ImageSource, atIndex:UInt, maximumInputs:UInt) -> UInt {
         guard (atIndex < maximumInputs) else { fatalError("ERROR: Attempted to set a source beyond the maximum number of inputs on this operation") }
         sources[atIndex] = source
         return atIndex
     }
     
-    public func removeAtIndex(_ index:UInt) {
+    fileprivate func removeAtIndex(_ index:UInt) {
         sources[index] = nil
     }
 }
@@ -202,7 +214,9 @@ public class ImageRelay: ImageProcessingOperation {
     }
     
     public func transmitPreviousImage(to target:ImageConsumer, atIndex:UInt) {
-        sources.sources[0]?.transmitPreviousImage(to:self, atIndex:0)
+        if let source = self.sources.sources[0] {
+            source.transmitPreviousImage(to:self, atIndex:0)
+        }
     }
 
     public func newFramebufferAvailable(_ framebuffer:Framebuffer, fromSourceIndex:UInt) {
