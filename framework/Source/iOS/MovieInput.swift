@@ -167,7 +167,7 @@ public class MovieInput: ImageSource {
             
             return assetReader
         } catch {
-            print("ERROR: Unable to create asset reader: \(error)")
+            debugPrint("ERROR: Unable to create asset reader: \(error)")
         }
         return nil
     }
@@ -195,13 +195,13 @@ public class MovieInput: ImageSource {
         do {
             try NSObject.catchException {
                 guard assetReader.startReading() else {
-                    print("ERROR: Unable to start reading: \(String(describing: assetReader.error))")
+                    debugPrint("ERROR: Unable to start reading: \(String(describing: assetReader.error))")
                     return
                 }
             }
         }
         catch {
-            print("ERROR: Unable to start reading: \(error)")
+            debugPrint("ERROR: Unable to start reading: \(error)")
             return
         }
         
@@ -377,7 +377,7 @@ public class MovieInput: ImageSource {
         let luminanceGLTextureResult = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, sharedImageProcessingContext.coreVideoTextureCache, movieFrame, nil, GLenum(GL_TEXTURE_2D), GL_LUMINANCE, GLsizei(bufferWidth), GLsizei(bufferHeight), GLenum(GL_LUMINANCE), GLenum(GL_UNSIGNED_BYTE), 0, &luminanceGLTexture)
         
         if(luminanceGLTextureResult != kCVReturnSuccess || luminanceGLTexture == nil) {
-            print("Could not create LuminanceGLTexture")
+            debugPrint("ERROR: Could not create LuminanceGLTexture")
             return
         }
         
@@ -391,7 +391,7 @@ public class MovieInput: ImageSource {
         do {
             luminanceFramebuffer = try Framebuffer(context: sharedImageProcessingContext, orientation: .portrait, size: GLSize(width:GLint(bufferWidth), height:GLint(bufferHeight)), textureOnly: true, overriddenTexture: luminanceTexture)
         } catch {
-            print("Could not create a framebuffer of the size (\(bufferWidth), \(bufferHeight)), error: \(error)")
+            debugPrint("ERROR: Could not create a framebuffer of the size (\(bufferWidth), \(bufferHeight)), error: \(error)")
             return
         }
         
@@ -402,7 +402,7 @@ public class MovieInput: ImageSource {
         let chrominanceGLTextureResult = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, sharedImageProcessingContext.coreVideoTextureCache, movieFrame, nil, GLenum(GL_TEXTURE_2D), GL_LUMINANCE_ALPHA, GLsizei(bufferWidth / 2), GLsizei(bufferHeight / 2), GLenum(GL_LUMINANCE_ALPHA), GLenum(GL_UNSIGNED_BYTE), 1, &chrominanceGLTexture)
         
         if(chrominanceGLTextureResult != kCVReturnSuccess || chrominanceGLTexture == nil) {
-            print("Could not create ChrominanceGLTexture")
+            debugPrint("ERROR: Could not create ChrominanceGLTexture")
             return
         }
         
@@ -416,7 +416,7 @@ public class MovieInput: ImageSource {
         do {
             chrominanceFramebuffer = try Framebuffer(context: sharedImageProcessingContext, orientation: .portrait, size: GLSize(width:GLint(bufferWidth), height:GLint(bufferHeight)), textureOnly: true, overriddenTexture: chrominanceTexture)
         } catch {
-            print("Could not create a framebuffer of the size (\(bufferWidth), \(bufferHeight)), error: \(error)")
+            debugPrint("ERROR: Could not create a framebuffer of the size (\(bufferWidth), \(bufferHeight)), error: \(error)")
             return
         }
         

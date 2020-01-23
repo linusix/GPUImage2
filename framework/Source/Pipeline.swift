@@ -41,7 +41,7 @@ public extension ImageSource {
                 self.targets.append(target, indexAtTarget:indexAtTarget)
                 self.transmitPreviousImage(to:target, atIndex:indexAtTarget)
             } else {
-                debugPrint("Warning: tried to add target beyond target's input capacity")
+                debugPrint("WARNING: tried to add target beyond target's input capacity")
             }
         }
     }
@@ -68,7 +68,7 @@ public extension ImageSource {
     
     func updateTargetsWithFramebuffer(_ framebuffer:Framebuffer) {
         if (DispatchQueue.getSpecific(key:sharedImageProcessingContext.dispatchQueueKey) != sharedImageProcessingContext.dispatchQueueKeyValue) {
-            print("WARNING: updateTargetsWithFramebuffer() must be called from the sharedImageProcessingContext")
+            debugPrint("WARNING: updateTargetsWithFramebuffer() must be called from the sharedImageProcessingContext")
         }
         
         let targets = self.targets.targets

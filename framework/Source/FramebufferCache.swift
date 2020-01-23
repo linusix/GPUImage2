@@ -27,11 +27,11 @@ public class FramebufferCache {
         let framebuffer:Framebuffer
         
         if(framebufferCache.count > 20) {
-            print("Warning: Runaway framebuffer cache with size: \(framebufferCache.count)")
+            debugPrint("WARNING: Runaway framebuffer cache with size: \(framebufferCache.count)")
         }
         
         if ((framebufferCache[hash]?.count ?? -1) > 0) {
-            //print("Restoring previous framebuffer")
+            //debugPrint("Restoring previous framebuffer")
             framebuffer = framebufferCache[hash]!.removeLast()
             framebuffer.orientation = orientation
         } else {

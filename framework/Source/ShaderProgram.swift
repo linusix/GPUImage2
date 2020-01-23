@@ -115,7 +115,7 @@ public class ShaderProgram {
     
     public func setValue(_ value:GLfloat, forUniform:String) {
         guard let uniformAddress = uniformIndex(forUniform) else {
-            debugPrint("Warning: Tried to set a uniform (\(forUniform)) that was missing or optimized out by the compiler")
+            //debugPrint("WARNING: Tried to set a uniform (\(forUniform)) that was missing or optimized out by the compiler")
             return
         }
         if (currentUniformFloatValues[forUniform] != value) {
@@ -126,7 +126,7 @@ public class ShaderProgram {
 
     public func setValue(_ value:GLint, forUniform:String) {
         guard let uniformAddress = uniformIndex(forUniform) else {
-            debugPrint("Warning: Tried to set a uniform (\(forUniform)) that was missing or optimized out by the compiler")
+            //debugPrint("WARNING: Tried to set a uniform (\(forUniform)) that was missing or optimized out by the compiler")
             return
         }
         if (currentUniformIntValues[forUniform] != value) {
@@ -145,7 +145,7 @@ public class ShaderProgram {
     
     public func setValue(_ value:[GLfloat], forUniform:String) {
         guard let uniformAddress = uniformIndex(forUniform) else {
-            debugPrint("Warning: Tried to set a uniform (\(forUniform)) that was missing or optimized out by the compiler")
+            //debugPrint("WARNING: Tried to set a uniform (\(forUniform)) that was missing or optimized out by the compiler")
             return
         }
         if let previousValue = currentUniformFloatArrayValues[forUniform], previousValue == value{
@@ -165,7 +165,7 @@ public class ShaderProgram {
 
     public func setMatrix(_ value:[GLfloat], forUniform:String) {
         guard let uniformAddress = uniformIndex(forUniform) else {
-            debugPrint("Warning: Tried to set a uniform (\(forUniform)) that was missing or optimized out by the compiler")
+            //debugPrint("WARNING: Tried to set a uniform (\(forUniform)) that was missing or optimized out by the compiler")
             return
         }
         if let previousValue = currentUniformFloatArrayValues[forUniform], previousValue == value{

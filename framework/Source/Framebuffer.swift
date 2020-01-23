@@ -205,7 +205,7 @@ public class Framebuffer {
         framebufferRetainCount -= 1
         if (framebufferRetainCount < 1) {
             if ((framebufferRetainCount < 0) && (cache != nil)) {
-                print("WARNING: Tried to overrelease a framebuffer")
+                debugPrint("WARNING: Tried to overrelease a framebuffer")
             }
             framebufferRetainCount = 0
             cache?.returnToCache(self)

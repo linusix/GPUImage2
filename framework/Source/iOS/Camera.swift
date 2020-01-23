@@ -57,7 +57,7 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
                 try self.addAudioInputsAndOutputs()
                 audioEncodingTarget.activateAudioTrack()
             } catch {
-                print("ERROR: Could not connect audio target with error: \(error)")
+                debugPrint("ERROR: Could not connect audio target with error: \(error)")
             }
         }
     }

@@ -106,10 +106,10 @@ public class RenderView:UIView, ImageConsumer {
         backingSize = GLSize(width:backingWidth, height:backingHeight)
         
         guard (backingWidth > 0 && backingHeight > 0) else {
-            print("WARNING: View had a zero size")
+            debugPrint("WARNING: View had a zero size")
             
             if(self.internalLayer.bounds.width > 0 && self.internalLayer.bounds.height > 0) {
-                print("WARNING: View size \(self.internalLayer.bounds) may be too large ")
+                debugPrint("WARNING: View size \(self.internalLayer.bounds) may be too large ")
             }
             return false
         }
@@ -118,7 +118,7 @@ public class RenderView:UIView, ImageConsumer {
         
         let status = glCheckFramebufferStatus(GLenum(GL_FRAMEBUFFER))
         if (status != GLenum(GL_FRAMEBUFFER_COMPLETE)) {
-            print("WARNING: Display framebuffer creation failed with error: \(FramebufferCreationError(errorCode:status))")
+            debugPrint("WARNING: Display framebuffer creation failed with error: \(FramebufferCreationError(errorCode:status))")
             return false
         }
         

@@ -207,7 +207,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
             self.previousFrameTime = frameTime
 
             guard (self.assetWriterVideoInput.isReadyForMoreMediaData || !self.encodingLiveVideo) else {
-                print("Had to drop a frame at time \(frameTime)")
+                debugPrint("INFO: Had to drop a frame at time \(frameTime)")
                 return
             }
             
@@ -220,7 +220,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
             
             let pixelBufferStatus = CVPixelBufferPoolCreatePixelBuffer(nil, self.assetWriterPixelBufferInput.pixelBufferPool!, &self.pixelBuffer)
             guard ((self.pixelBuffer != nil) && (pixelBufferStatus == kCVReturnSuccess)) else {
-                print("WARNING: Unable to create pixel buffer, dropping frame")
+                debugPrint("WARNING: Unable to create pixel buffer, dropping frame")
                 return
             }
             
@@ -231,12 +231,12 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
                 
                 try NSObject.catchException {
                     if (!self.assetWriterPixelBufferInput.append(self.pixelBuffer!, withPresentationTime:frameTime)) {
-                        print("WARNING: Trouble appending pixel buffer at time: \(frameTime) \(String(describing: self.assetWriter.error))")
+                        debugPrint("WARNING: Trouble appending pixel buffer at time: \(frameTime) \(String(describing: self.assetWriter.error))")
                     }
                 }
             }
             catch {
-                print("WARNING: Trouble appending pixel buffer at time: \(frameTime) \(error)")
+                debugPrint("WARNING: Trouble appending pixel buffer at time: \(frameTime) \(error)")
             }
             
             if(self.synchronizedEncodingDebug) {
@@ -318,7 +318,7 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
             let currentSampleTime = CMSampleBufferGetOutputPresentationTimeStamp(sampleBuffer)
             
             guard (assetWriterAudioInput.isReadyForMoreMediaData || !self.encodingLiveVideo) else {
-                print("Had to drop a audio sample at time \(currentSampleTime)")
+                debugPrint("INFO: Had to drop a audio sample at time \(currentSampleTime)")
                 return
             }
             
@@ -332,12 +332,12 @@ public class MovieOutput: ImageConsumer, AudioEncodingTarget {
             do {
                 try NSObject.catchException {
                     if (!assetWriterAudioInput.append(sampleBuffer)) {
-                        print("WARNING: Trouble appending audio sample buffer: \(String(describing: self.assetWriter.error))")
+                        debugPrint("WARNING: Trouble appending audio sample buffer: \(String(describing: self.assetWriter.error))")
                     }
                 }
             }
             catch {
-                print("WARNING: Trouble appending audio sample buffer: \(error)")
+                debugPrint("WARNING: Trouble appending audio sample buffer: \(error)")
             }
         }
         

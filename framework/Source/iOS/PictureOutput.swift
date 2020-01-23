@@ -33,7 +33,7 @@ public class PictureOutput: ImageConsumer {
                 try imageData.write(to: self.url, options:.atomic)
             } catch {
                 // TODO: Handle this better
-                print("WARNING: Couldn't save image with error:\(error)")
+                debugPrint("WARNING: Couldn't save image with error:\(error)")
             }
         }
     }
