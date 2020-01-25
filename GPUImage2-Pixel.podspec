@@ -1,11 +1,12 @@
 Pod::Spec.new do |s|
-    s.name     = 'PixelGPUImage2'
-    s.version  = '1.0.3'
+    s.name     = 'GPUImage2-Pixel'
+    s.module_name = 'GPUImage2'
+    s.version  = '2.0.0'
     s.license  = 'BSD'
     s.summary  = 'An open source iOS framework for GPU-based image and video processing.'
-    s.homepage = 'https://github.com/joshbernfeld/PixelGPUImage2'
+    s.homepage = 'https://github.com/joshbernfeld/GPUImage2'
     s.author   = { 'Brad Larson' => 'contact@sunsetlakesoftware.com' }
-    s.source   = { :git => 'https://github.com/joshbernfeld/PixelGPUImage2.git', :tag => s.version }
+    s.source   = { :git => 'https://github.com/joshbernfeld/GPUImage2.git', :tag => s.version }
 
     s.source_files = 'framework/Source/**/*.{swift,h,m}'
     s.resources = 'framework/Source/Operations/Shaders/*.{fsh}'
