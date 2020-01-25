@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name     = 'GPUImage2-Pixel'
-    s.module_name = 'GPUImage2'
+    s.module_name = 'GPUImage'
     s.version  = '2.0.0'
     s.license  = 'BSD'
     s.summary  = 'An open source iOS framework for GPU-based image and video processing.'
