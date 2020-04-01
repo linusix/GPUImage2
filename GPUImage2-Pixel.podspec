@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name     = 'GPUImage2-Pixel'
     s.module_name = 'GPUImage'
-    s.version  = '3.0.0'
+    s.version  = '3.0.1'
     s.license  = 'BSD'
     s.summary  = 'An open source iOS framework for GPU-based image and video processing.'
     s.homepage = 'https://github.com/joshbernfeld/GPUImage2'
@@ -12,7 +12,8 @@ Pod::Spec.new do |s|
     s.resources = 'framework/Source/Operations/Shaders/*.{fsh}'
     s.requires_arc = true
     s.xcconfig = { 'CLANG_MODULES_AUTOLINK' => 'YES',
-                          'OTHER_SWIFT_FLAGS' => "$(inherited) -DGLES"}
+                   'OTHER_SWIFT_FLAGS' => "$(inherited) -DGLES",
+                   'VALIDATE_WORKSPACE_SKIPPED_SDK_FRAMEWORKS' => "OpenGLES" }
 
     s.ios.deployment_target = '8.0'
     s.ios.exclude_files = 'framework/Source/Mac', 'framework/Source/Linux', 'framework/Source/Operations/Shaders/ConvertedShaders_GL.swift'
