@@ -35,7 +35,19 @@ public enum PhysicalCameraLocation {
     }
 }
 
-public struct CameraError: Error {
+public enum CameraError: Error, CustomStringConvertible {
+    case avCaptureDeviceNotFound
+    
+    public var errorDescription: String {
+        switch self {
+        case .avCaptureDeviceNotFound:
+            return "The AVCaptureDevice could not be found. Camera is not supported on Simulator."
+        }
+    }
+    
+    public var description: String {
+        return "<\(type(of: self)): errorDescription = \(self.errorDescription)>"
+    }
 }
 
 let initialBenchmarkFramesToIgnore = 5
@@ -104,7 +116,7 @@ public class Camera: NSObject, ImageSource, AVCaptureVideoDataOutputSampleBuffer
                 self.yuvConversionShader = nil
                 self.inputCamera = nil
                 super.init()
-                throw CameraError()
+                throw CameraError.avCaptureDeviceNotFound
             }
         }
         
