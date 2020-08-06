@@ -41,7 +41,7 @@ open class BasicOperation: ImageProcessingOperation {
     
     public let targets = TargetContainer()
     public let sources = SourceContainer()
-    var shader:ShaderProgram
+    public var shader:ShaderProgram
     public var inputFramebuffers = [UInt:Framebuffer]()
     var renderFramebuffer:Framebuffer!
     var outputFramebuffer:Framebuffer { get { return renderFramebuffer } }
@@ -125,12 +125,12 @@ open class BasicOperation: ImageProcessingOperation {
         }
     }
     
-    func internalRenderFunction(_ inputFramebuffer:Framebuffer, textureProperties:[InputTextureProperties]) {
+    open func internalRenderFunction(_ inputFramebuffer:Framebuffer, textureProperties:[InputTextureProperties]) {
         renderQuadWithShader(shader, uniformSettings:uniformSettings, vertexBufferObject:sharedImageProcessingContext.standardImageVBO, inputTextures:textureProperties)
         releaseIncomingFramebuffers()
     }
     
-    func releaseIncomingFramebuffers() {
+    open func releaseIncomingFramebuffers() {
         var remainingFramebuffers = [UInt:Framebuffer]()
         // If all inputs are still images, have this output behave as one
         renderFramebuffer.timingStyle = .stillImage

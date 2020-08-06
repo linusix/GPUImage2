@@ -24,7 +24,7 @@ open class TransformOperation: BasicOperation {
         ({transform = Matrix4x4.identity})()
     }
     
-    override func internalRenderFunction(_ inputFramebuffer:Framebuffer, textureProperties:[InputTextureProperties]) {
+    public override func internalRenderFunction(_ inputFramebuffer:Framebuffer, textureProperties:[InputTextureProperties]) {
         renderQuadWithShader(shader, uniformSettings:uniformSettings, vertices:normalizedImageVertices, inputTextures:textureProperties)
         releaseIncomingFramebuffers()
     }
